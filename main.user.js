@@ -3,7 +3,7 @@
 // @namespace   @NO_BOOT_DEVICE/Cuckoo
 // @description It's like TweetDeck, but with updates!
 // @include     https://tweetdeck.twitter.com/*
-// @version     0.1
+// @version     0.2
 // @grant       none
 // ==/UserScript==
 window.Cuckoo = {};
@@ -11,13 +11,14 @@ if(typeof localStorage.cuckooSettings !== 'undefined') {
   try {
     window.Cuckoo.__settings = JSON.parse(localStorage.cuckooSettings);
   } catch(e) {
-    console.log(e)
+    console.log('error:',e)
+    console.log('cuckoosettings',localStorage.cuckooSettings)
     if (e.name === 'SyntaxError') {
       alert('Your settings were corrupted, and have been reset. Sorry for the inconvenience.');      
       delete localStorage.cuckooSettings;
       location.reload();
     } else {
-      alert('Something odd happened! Tell @NO_BOOT_DEVICE '+e+'occurred in Cuckoo settings parsing!');
+      alert('Something odd happened! Send @NO_BOOT_DEVICE a paste of your dev console output!');
     }
   }
 } else {
@@ -109,29 +110,21 @@ TD.components.CuckooSettings = TD.components.Base.extend(function() {
   }
 })
 TD.metrics.send = _.wrap(TD.metrics.send, function(func, args) {
-  console.log('attempt to call TD.metrics.send')
   if (window.Cuckoo.settings.get('analytics') === true) { 
-    console.log('attempt to call TD.metrics.send succeeded');
     return func(args);
   } else {
-    console.log('attempt to call TD.metrics.send failed');
     return undefined;
   }
 })
 window.ClientEvent = _.wrap(window.ClientEvent, function(f, a) { 
-  console.log(f)
   clientevent = new f(a)
   clientevent.scribe = _.wrap(clientevent.scribe, function(func, args) { 
     if (window.Cuckoo.settings.get('analytics') === true) { 
-      console.log('attempt to call TD.controller.stats.scribeClientEvent.scribe succeded');
       return func(args);
     } else {
-      console.log('attempt to call TD.controller.stats.scribeClientEvent.scribe failed');
       return undefined; 
     }
   })
   return clientevent
 });
 ClientEvent.prototype.constructor  = window.ClientEvent 
-console.log("prototype",ClientEvent.prototype.constructor)
-console.log("object",window.ClientEvent)
